@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from selenium import webdriver
 from bs4 import BeautifulSoup
+import ollama
 from openai import OpenAI
 import time
 
@@ -31,13 +32,16 @@ class ScrapedWebsiteAISummary:
             {"role": "user", "content": userPrompt}
         ]
         
-    def summarize(self):
+    def summarizeOpenAI(self):
         openai = OpenAI()
         
-        self.response = openai.chat.completions.create(
+        self.openAiResponse = openai.chat.completions.create(
             model = "gpt-4o-mini",
             messages = self.message
         )
+        
+    def summarizeOllama(self, model):
+        self.ollamaResponse = ollama.chat(model=model, messages=self.message)
 
 url = 'https://www.wsj.com/'
 
@@ -54,4 +58,8 @@ and provides a short summary, ignoring text that might be navigation related. \
 Respond in markdown."
 
 data.message(userPrompt, systemPrompt)
-data.summarize()
+data.summarizeOpenAI()
+data.summarizeOllama('gemma3')
+gemma3 = data.ollamaResponse
+data.summarizeOllama('deepseek-r1:1.5b')
+deepseek = data.ollamaResponse
